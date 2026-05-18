@@ -306,6 +306,9 @@ with st.expander("🎙️ 3. Audio settings", expanded=True):
             label_visibility="collapsed",
         )
 
+
+
+with st.expander("🎧 4. Generate audio", expanded=True):
     if st.button("Generate MP3", type="primary"):
         try:
             with st.spinner("Generating MP3..."):
@@ -320,8 +323,6 @@ with st.expander("🎙️ 3. Audio settings", expanded=True):
         except Exception as exc:
             st.error(f"Failed to generate MP3: {exc}")
 
-
-with st.expander("🎧 4. Generated audio", expanded=True):
     existing_output_path = Path(resolved_output_path)
 
     if existing_output_path.exists():
