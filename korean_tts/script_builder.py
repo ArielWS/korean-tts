@@ -12,11 +12,14 @@ Item {index}.
 
 {item.english}
 
+Pause.
+
+{item.english_sentence}
+
 {item.korean_sentence_informal_polite}
 
 {item.korean_sentence_formal_polite}
 
-{item.english_sentence}
 
 Pause.
 """.strip()
