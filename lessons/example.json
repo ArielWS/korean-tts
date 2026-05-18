@@ -1,5 +1,5 @@
 {
-    "lesson_title": "Example Lesson",
+    "lesson_title": "Multi Item Test Lesson",
     "items": [
       {
         "korean_word": "공장",
@@ -14,6 +14,20 @@
         "korean_sentence_informal_polite": "오늘 열이 조금 있어요.",
         "korean_sentence_formal_polite": "오늘 열이 조금 있습니다.",
         "english_sentence": "I have a slight fever today."
+      },
+      {
+        "korean_word": "극장",
+        "english": "theater",
+        "korean_sentence_informal_polite": "우리는 어제 극장에 갔어요.",
+        "korean_sentence_formal_polite": "우리는 어제 극장에 갔습니다.",
+        "english_sentence": "We went to the theater yesterday."
+      },
+      {
+        "korean_word": "직업",
+        "english": "job / occupation",
+        "korean_sentence_informal_polite": "제 직업은 데이터 분석가예요.",
+        "korean_sentence_formal_polite": "제 직업은 데이터 분석가입니다.",
+        "english_sentence": "My job is data analyst."
       }
     ]
   }
