@@ -12,11 +12,7 @@ Item {index}.
 
 {item.english}
 
-Informal polite.
-
 {item.korean_sentence_informal_polite}
-
-Formal polite.
 
 {item.korean_sentence_formal_polite}
 
