@@ -24,6 +24,7 @@ outputs/
 .DS_Store
 .vscode/
 .idea/
+*.command
 
 # Logs
 *.log
