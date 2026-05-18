@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+LESSONS_DIR = PROJECT_ROOT / "lessons"
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 
 DEFAULT_MODEL = "gpt-4o-mini-tts"
