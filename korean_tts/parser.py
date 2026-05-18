@@ -1,4 +1,6 @@
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -9,58 +11,57 @@ class VocabItem:
     english_sentence: str
 
 
-def _clean_cell(value: str) -> str:
-    return value.strip().replace("<br>", " ").replace("<br/>", " ").replace("<br />", " ")
+@dataclass
+class Lesson:
+    lesson_title: str | None
+    items: list[VocabItem]
 
 
-def parse_markdown_table(text: str) -> list[VocabItem]:
-    """
-    Parses a copied ChatGPT markdown table like:
+REQUIRED_ITEM_FIELDS = [
+    "korean_word",
+    "english",
+    "korean_sentence",
+    "english_sentence",
+]
 
-    | Korean word | English | Korean sentence | English sentence |
-    |---|---|---|---|
-    | 공장 | factory | 그 공장은 오래됐어요. | That factory is old. |
-    """
 
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    table_lines = [line for line in lines if line.startswith("|") and line.endswith("|")]
+def load_lesson_json(path: str | Path) -> Lesson:
+    lesson_path = Path(path)
 
-    if not table_lines:
-        raise ValueError("No markdown table found. Copy the table including the | column separators.")
+    if not lesson_path.exists():
+        raise FileNotFoundError(f"Lesson file not found: {lesson_path}")
 
-    rows: list[list[str]] = []
+    try:
+        data = json.loads(lesson_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON in {lesson_path}: {exc}") from exc
 
-    for line in table_lines:
-        cells = [_clean_cell(cell) for cell in line.strip("|").split("|")]
+    if "items" not in data:
+        raise ValueError("Lesson JSON must contain an 'items' field.")
 
-        # Skip separator row: |---|---|---|
-        if all(set(cell.replace(":", "").replace("-", "").strip()) == set() for cell in cells):
-            continue
-
-        rows.append(cells)
-
-    if len(rows) < 2:
-        raise ValueError("The table needs a header row and at least one vocabulary row.")
-
-    header = [h.lower() for h in rows[0]]
-    data_rows = rows[1:]
+    if not isinstance(data["items"], list) or not data["items"]:
+        raise ValueError("'items' must be a non-empty list.")
 
     items: list[VocabItem] = []
 
-    for i, row in enumerate(data_rows, start=1):
-        if len(row) < 4:
-            raise ValueError(f"Row {i} has fewer than 4 columns: {row}")
+    for index, raw_item in enumerate(data["items"], start=1):
+        if not isinstance(raw_item, dict):
+            raise ValueError(f"Item {index} must be an object.")
 
-        item = VocabItem(
-            korean_word=row[0],
-            english=row[1],
-            korean_sentence=row[2],
-            english_sentence=row[3],
+        missing = [field for field in REQUIRED_ITEM_FIELDS if not raw_item.get(field)]
+        if missing:
+            raise ValueError(f"Item {index} is missing required fields: {', '.join(missing)}")
+
+        items.append(
+            VocabItem(
+                korean_word=raw_item["korean_word"].strip(),
+                english=raw_item["english"].strip(),
+                korean_sentence=raw_item["korean_sentence"].strip(),
+                english_sentence=raw_item["english_sentence"].strip(),
+            )
         )
 
-        if not item.korean_word or not item.english or not item.korean_sentence or not item.english_sentence:
-            raise ValueError(f"Row {i} contains an empty required field: {row}")
-
-        items.append(item)
-
-    return items
+    return Lesson(
+        lesson_title=data.get("lesson_title"),
+        items=items,
+    )
