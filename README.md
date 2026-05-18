@@ -1,5 +1,8 @@
 # Korean Vocabulary TTS
 
+<img width="2864" height="1790" alt="image" src="https://github.com/user-attachments/assets/7c1b9b4a-f69d-4887-b977-18cd8bfd3bbd" />
+
+
 A small local Streamlit app and CLI for turning Korean vocabulary lesson JSON into MP3 study audio using OpenAI text-to-speech.
 
 The daily workflow is:
