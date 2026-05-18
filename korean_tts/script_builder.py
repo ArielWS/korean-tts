@@ -4,29 +4,22 @@ from korean_tts.parser import VocabItem
 def build_study_script(items: list[VocabItem]) -> str:
     blocks: list[str] = []
 
-    for index, item in enumerate(items, start=1):
+    for item in items:
         block = f"""
-Item {index}.
-
 {item.korean_word}
 
 {item.english}
-
-Pause.
 
 {item.english_sentence}
 
 {item.korean_sentence_informal_polite}
 
 {item.korean_sentence_formal_polite}
-
-
-Pause.
 """.strip()
 
         blocks.append(block)
 
-    return "\n\n".join(blocks)
+    return "\n\n\n".join(blocks)
 
 
 def split_script(script: str, max_chars: int) -> list[str]:
