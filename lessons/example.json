@@ -4,13 +4,15 @@
       {
         "korean_word": "공장",
         "english": "factory",
-        "korean_sentence": "그 공장은 오래됐어요.",
+        "korean_sentence_informal_polite": "그 공장은 오래됐어요.",
+        "korean_sentence_formal_polite": "그 공장은 오래되었습니다.",
         "english_sentence": "That factory is old."
       },
       {
         "korean_word": "열",
         "english": "fever",
-        "korean_sentence": "오늘 열이 조금 있어요.",
+        "korean_sentence_informal_polite": "오늘 열이 조금 있어요.",
+        "korean_sentence_formal_polite": "오늘 열이 조금 있습니다.",
         "english_sentence": "I have a slight fever today."
       }
     ]
