@@ -6,9 +6,10 @@ def build_study_script(items: list[VocabItem]) -> str:
 
     for item in items:
         block = f"""
-{item.korean_word}
 
 {item.english}
+
+{item.korean_word}
 
 {item.english_sentence}
 
