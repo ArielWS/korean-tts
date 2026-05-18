@@ -7,7 +7,8 @@ from pathlib import Path
 class VocabItem:
     korean_word: str
     english: str
-    korean_sentence: str
+    korean_sentence_informal_polite: str
+    korean_sentence_formal_polite: str
     english_sentence: str
 
 
@@ -20,7 +21,8 @@ class Lesson:
 REQUIRED_ITEM_FIELDS = [
     "korean_word",
     "english",
-    "korean_sentence",
+    "korean_sentence_informal_polite",
+    "korean_sentence_formal_polite",
     "english_sentence",
 ]
 
@@ -56,7 +58,8 @@ def load_lesson_json(path: str | Path) -> Lesson:
             VocabItem(
                 korean_word=raw_item["korean_word"].strip(),
                 english=raw_item["english"].strip(),
-                korean_sentence=raw_item["korean_sentence"].strip(),
+                korean_sentence_informal_polite=raw_item["korean_sentence_informal_polite"].strip(),
+                korean_sentence_formal_polite=raw_item["korean_sentence_formal_polite"].strip(),
                 english_sentence=raw_item["english_sentence"].strip(),
             )
         )
