@@ -50,6 +50,7 @@ def main() -> None:
             print(f"Lesson: {lesson.lesson_title}\n")
         print(study_script)
         print("\n--- END ---\n")
+        return
 
     output_name = args.out or f"{input_path.stem}.mp3"
     output_path = OUTPUT_DIR / output_name
