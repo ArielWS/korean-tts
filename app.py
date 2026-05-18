@@ -1,13 +1,89 @@
 from pathlib import Path
+import json
+import tempfile
 
 import streamlit as st
 
-from korean_tts.config import DEFAULT_VOICE, OUTPUT_DIR
-from korean_tts.lesson_files import create_lesson_file, list_lesson_files, resolve_output_path
+from korean_tts.config import DEFAULT_VOICE, LESSONS_DIR
+from korean_tts.lesson_files import list_lesson_files, normalise_lesson_filename, resolve_output_path
+from korean_tts.parser import load_lesson_json
 from korean_tts.workflow import generate_lesson_audio, prepare_lesson_script
 
 
 VOICE_OPTIONS = ["marin", "cedar"]
+
+
+EXAMPLE_JSON = {
+    "lesson_title": "Example Lesson",
+    "items": [
+        {
+            "korean_word": "공장",
+            "english": "factory",
+            "korean_sentence_informal_polite": "그 공장은 오래됐어요.",
+            "korean_sentence_formal_polite": "그 공장은 오래되었습니다.",
+            "english_sentence": "That factory is old."
+        }
+    ]
+}
+
+
+def validate_lesson_json_text(raw_json: str) -> dict:
+    """
+    Validates pasted lesson JSON before writing it into lessons/.
+    """
+
+    if not raw_json.strip():
+        raise ValueError("Paste lesson JSON before saving.")
+
+    try:
+        data = json.loads(raw_json)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON: {exc}") from exc
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir) / "lesson.json"
+        tmp_path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+        # Reuse the existing parser validation.
+        load_lesson_json(tmp_path)
+
+    return data
+
+
+def save_pasted_lesson_json(
+    lesson_name: str,
+    raw_json: str,
+    overwrite: bool,
+) -> Path:
+    """
+    Saves pasted lesson JSON into lessons/ after validating it.
+    """
+
+    if not lesson_name.strip():
+        raise ValueError("Enter a lesson filename.")
+
+    lesson_data = validate_lesson_json_text(raw_json)
+
+    LESSONS_DIR.mkdir(parents=True, exist_ok=True)
+
+    filename = normalise_lesson_filename(lesson_name)
+    lesson_path = LESSONS_DIR / filename
+
+    if lesson_path.exists() and not overwrite:
+        raise FileExistsError(
+            f"Lesson file already exists: {lesson_path.name}. "
+            "Enable overwrite or choose another name."
+        )
+
+    lesson_path.write_text(
+        json.dumps(lesson_data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    return lesson_path
 
 
 st.set_page_config(
@@ -18,50 +94,64 @@ st.set_page_config(
 
 
 st.title("Korean Vocabulary TTS")
-st.caption("Generate Korean vocabulary study MP3s from local JSON lesson files.")
+st.caption("Paste a lesson JSON file, save it locally, then generate an MP3.")
 
 
 with st.sidebar:
-    st.header("Lesson files")
+    st.header("Add lesson")
 
-    new_lesson_name = st.text_input(
-        "Create new lesson file",
+    lesson_name = st.text_input(
+        "Lesson filename",
         placeholder="e.g. 2026-05-18-week1-day1",
+    )
+
+    pasted_json = st.text_area(
+        "Paste lesson JSON",
+        value=json.dumps(EXAMPLE_JSON, ensure_ascii=False, indent=2),
+        height=360,
     )
 
     overwrite = st.checkbox("Overwrite if file exists", value=False)
 
-    if st.button("Create lesson file"):
-        if not new_lesson_name.strip():
-            st.error("Enter a lesson filename first.")
-        else:
-            try:
-                created_path = create_lesson_file(
-                    name=new_lesson_name,
-                    overwrite=overwrite,
-                )
-                st.success(f"Created: {created_path.name}")
-                st.rerun()
-            except Exception as exc:
-                st.error(str(exc))
+    if st.button("Save lesson JSON", type="primary"):
+        try:
+            saved_path = save_pasted_lesson_json(
+                lesson_name=lesson_name,
+                raw_json=pasted_json,
+                overwrite=overwrite,
+            )
+
+            st.session_state["selected_lesson_name"] = saved_path.name
+            st.success(f"Saved: {saved_path.name}")
+            st.rerun()
+
+        except Exception as exc:
+            st.error(str(exc))
 
     st.divider()
 
-    refresh = st.button("Refresh lesson list")
+    if st.button("Refresh lesson list"):
+        st.rerun()
 
 
 lesson_files = list_lesson_files()
 
 if not lesson_files:
-    st.warning("No lesson JSON files found in lessons/. Create one from the sidebar first.")
+    st.warning("No lesson JSON files found in lessons/. Paste and save a lesson in the sidebar.")
     st.stop()
 
 
 lesson_labels = [path.name for path in lesson_files]
 
+default_index = 0
+if "selected_lesson_name" in st.session_state:
+    if st.session_state["selected_lesson_name"] in lesson_labels:
+        default_index = lesson_labels.index(st.session_state["selected_lesson_name"])
+
 selected_label = st.selectbox(
     "Select lesson file",
     lesson_labels,
+    index=default_index,
 )
 
 selected_path = lesson_files[lesson_labels.index(selected_label)]
@@ -113,18 +203,26 @@ with right_col:
     )
 
     default_output_path = resolve_output_path(selected_path)
-    output_filename = st.text_input(
-        "Output filename",
-        value=default_output_path.name,
-        help="If you enter only a filename, the MP3 is saved in outputs/.",
-    )
 
+    st.write("**Output filename:**")
+    st.code(default_output_path.name)
+
+    st.write("**Output path:**")
+    st.code(str(default_output_path))
+
+    with st.expander("Advanced: custom output filename", expanded=False):
+        custom_output_filename = st.text_input(
+            "Custom output filename",
+            value="",
+            placeholder=default_output_path.name,
+            help="Leave blank to use the lesson filename.",
+        )
+
+    output_arg = custom_output_filename.strip() or None
     resolved_output_path = resolve_output_path(
         input_path=selected_path,
-        output_arg=output_filename,
+        output_arg=output_arg,
     )
-
-    st.write(f"**Output path:** `{resolved_output_path}`")
 
     with st.expander("Preview generated study script", expanded=False):
         st.text_area(
@@ -135,14 +233,12 @@ with right_col:
             label_visibility="collapsed",
         )
 
-    generate_clicked = st.button("Generate MP3", type="primary")
-
-    if generate_clicked:
+    if st.button("Generate MP3", type="primary"):
         try:
             with st.spinner("Generating MP3..."):
                 final_path = generate_lesson_audio(
                     input_path=selected_path,
-                    output_arg=output_filename,
+                    output_arg=output_arg,
                     voice=voice,
                 )
 
@@ -169,4 +265,4 @@ if existing_output_path.exists():
             mime="audio/mpeg",
         )
 else:
-    st.info("No MP3 exists yet for the selected output filename.")
+    st.info("No MP3 exists yet for the selected lesson/output filename.")
