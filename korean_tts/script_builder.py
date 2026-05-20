@@ -25,8 +25,11 @@ def build_study_script(items: list[VocabItem]) -> str:
 
 def split_script(script: str, max_chars: int) -> list[str]:
     """
-    Splits the study script by vocabulary item blocks so the API receives
-    manageable chunks.
+    Splits the study script by vocabulary item blocks.
+
+    Items are separated by triple newlines in build_study_script().
+    This keeps each vocabulary item intact and avoids sending oversized
+    text blocks to the TTS API.
     """
 
     blocks = [block.strip() for block in script.split("\n\n\n") if block.strip()]
