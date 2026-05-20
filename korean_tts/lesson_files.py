@@ -9,11 +9,11 @@ LESSON_TEMPLATE = {
     "lesson_title": "New Lesson",
     "items": [
         {
-            "korean_word": "공장",
             "english": "factory",
+            "korean_word": "공장",
+            "english_sentence": "That factory is old.",
             "korean_sentence_informal_polite": "그 공장은 오래됐어요.",
-            "korean_sentence_formal_polite": "그 공장은 오래되었습니다.",
-            "english_sentence": "That factory is old."
+            "korean_sentence_formal_polite": "그 공장은 오래되었습니다."
         }
     ]
 }
