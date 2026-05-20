@@ -13,7 +13,7 @@ DEFAULT_RESPONSE_FORMAT = "mp3"
 
 # Conservative chunk size. The model limit is token-based, but this avoids
 # sending very large 50-word lesson scripts in one request.
-MAX_CHARS_PER_CHUNK = 3000
+MAX_CHARS_PER_CHUNK = 2500
 
 TTS_INSTRUCTIONS = """
 You are generating Korean vocabulary study audio.
